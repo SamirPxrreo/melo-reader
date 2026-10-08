@@ -1,0 +1,23 @@
+{
+  "name": "melo-md-reader",
+  "version": "1.0.0",
+  "description": "App elegante, hermosa y personalizable para leer archivos Markdown",
+  "type": "module",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "serve": "node server.js"
+  },
+  "keywords": [
+    "markdown",
+    "reader",
+    "themes",
+    "katex",
+    "mermaid"
+  ],
+  "author": "Melo Reader",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^30.0.0"
+  }
+}

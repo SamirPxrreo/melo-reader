@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Melo Reader 🚀 — Lector Markdown Elegante</title>
+
+  <!-- Electron module compatibility fix for CDN scripts -->
+  <script>
+    if (typeof module === 'object') {
+      window.nodeModule = module;
+      module = undefined;
+    }
+  </script>
+
+  <!-- Favicon & App Icons -->
+  <link rel="icon" type="image/x-icon" href="assets/app.ico">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+
+  <!-- Google Fonts Selección Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Highlight.js Syntax Highlighting Theme (Atom One Dark) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- Melo Reader CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="neon-cyberpunk">
+
+  <!-- Ambient Glow effect -->
+  <div class="ambient-glow"></div>
+
+  <!-- Hidden File Input for Picker -->
+  <input type="file" id="fileInput" accept=".md,.markdown,.txt" style="display: none;">
+
+  <!-- APPLICATION NAVBAR (Impeccable & Anti-Slop Architecture) -->
+  <header class="app-navbar-container" role="banner">
+    <nav class="app-navbar" id="appNavbar" aria-label="Herramientas de lectura">
+      <!-- Left: Brand Identity & Active Document Status -->
+      <div class="nav-section nav-left">
+        <button type="button" class="nav-brand" id="brandLogo" aria-label="Melo Reader - Lector Elegante">
+          <span class="brand-glyph" aria-hidden="true" style="overflow: hidden; padding: 0;">
+            <img src="assets/logo.jpg" alt="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+          </span>
+          <span class="brand-name">Melo<span class="brand-suffix">Reader</span></span>
+        </button>
+
+        <div class="nav-separator" aria-hidden="true"></div>
+
+        <div class="nav-document-pill" id="docPill" title="Archivo cargado actualmente">
+          <i data-lucide="file-text" class="doc-icon" aria-hidden="true"></i>
+          <span class="nav-document-name" id="docTitle">sample.md</span>
+          <span class="nav-reading-badge" id="navReadingBadge" title="Tiempo estimado de lectura">
+            <span class="badge-dot" aria-hidden="true"></span>
+            <span id="navReadingTime">1 min</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Center: Command Palette Trigger & Document TOC -->
+      <div class="nav-section nav-center">
+        <!-- Quick Search / Command Palette Bar -->
+        <button type="button" class="nav-search-trigger" id="btnSearch" aria-label="Buscar en el documento (Ctrl + K)">
+          <i data-lucide="search" class="search-icon" aria-hidden="true"></i>
+          <span class="search-placeholder">Buscar en notas…</span>
+          <kbd class="nav-kbd" aria-hidden="true">Ctrl&nbsp;+&nbsp;K</kbd>
+        </button>
+
+        <!-- Table of Contents Toggle Button -->
+        <button type="button" class="nav-btn nav-btn-subtle" id="btnToggleToc" aria-label="Abrir tabla de contenidos" aria-expanded="false" data-tooltip="Índice de contenidos">
+          <i data-lucide="list-tree" aria-hidden="true"></i>
+          <span>Índice</span>
+          <span class="nav-counter" id="navTocCount" aria-label="Secciones detectadas">0</span>
+        </button>
+      </div>
+
+      <!-- Right: Utility Suite & Primary Action -->
+      <div class="nav-section nav-right">
+        <!-- Audio / TTS Button with Live Speaking Pulse -->
+        <button type="button" class="nav-btn nav-icon-btn" id="btnTts" aria-label="Escuchar documento en voz alta" data-tooltip="Escuchar texto">
+          <i data-lucide="volume-2" aria-hidden="true"></i>
+          <span class="tts-pulse-dot" aria-hidden="true"></span>
+        </button>
+
+        <!-- Appearance / Theme Customizer Button -->
+        <button type="button" class="nav-btn nav-icon-btn" id="btnOpenSettings" aria-label="Personalizar estilo, tipografías y temas" aria-expanded="false" data-tooltip="Temas y Tipografía">
+          <span class="theme-active-indicator" id="navThemeIndicator" aria-hidden="true"></span>
+          <i data-lucide="palette" aria-hidden="true"></i>
+        </button>
+
+        <!-- Zen Reader Mode Button -->
+        <button type="button" class="nav-btn nav-icon-btn" id="btnZen" aria-label="Activar Modo Zen sin distracciones" data-tooltip="Modo Zen (Esc)">
+          <i data-lucide="maximize-2" aria-hidden="true"></i>
+        </button>
+
+        <!-- Export / Print Button -->
+        <button type="button" class="nav-btn nav-icon-btn" id="btnPrint" aria-label="Exportar a PDF o imprimir documento" data-tooltip="Exportar / Imprimir">
+          <i data-lucide="printer" aria-hidden="true"></i>
+        </button>
+
+        <div class="nav-separator" aria-hidden="true"></div>
+
+        <!-- Primary Action: Open File -->
+        <button type="button" class="nav-btn nav-btn-primary" id="btnOpenFile" aria-label="Abrir archivo Markdown (Ctrl + O)">
+          <i data-lucide="folder-open" aria-hidden="true"></i>
+          <span>Abrir .md</span>
+          <kbd class="nav-kbd-alt" aria-hidden="true">Ctrl&nbsp;+&nbsp;O</kbd>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- SEARCH MODAL -->
+  <div class="search-modal" id="searchModal">
+    <i data-lucide="search" style="color: var(--text-muted); width: 18px; height: 18px;"></i>
+    <input type="text" id="searchInput" class="search-input" placeholder="Buscar texto en el documento...">
+    <span class="search-stats" id="searchStats"></span>
+    <button class="dock-btn" id="btnSearchPrev" title="Anterior">▲</button>
+    <button class="dock-btn" id="btnSearchNext" title="Siguiente">▼</button>
+    <button class="dock-btn" id="btnCloseSearch" title="Cerrar búsqueda">✕</button>
+  </div>
+
+  <!-- SIDEBAR: TABLE OF CONTENTS -->
+  <aside class="sidebar-toc" id="sidebarToc">
+    <div class="toc-header">
+      <span class="toc-title">Tabla de Contenidos</span>
+      <button class="dock-btn" id="btnCloseToc" style="padding: 4px;">✕</button>
+    </div>
+    <ul class="toc-list" id="tocList">
+      <!-- Generated dynamically -->
+    </ul>
+  </aside>
+
+  <!-- SETTINGS DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- SETTINGS DRAWER -->
+  <aside class="settings-drawer" id="settingsDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">🎨 Personalización Melo</div>
+      <button class="dock-btn" id="btnCloseDrawer" style="padding: 4px;">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Themes -->
+      <div class="setting-group">
+        <label class="setting-label">Tema de Color</label>
+        <div class="theme-grid">
+          <button class="theme-pill-btn active" data-theme="neon-cyberpunk">
+            <span class="theme-dot" style="background: linear-gradient(135deg, #00f0ff, #f43f5e);"></span>
+            <span>Cyberpunk</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="tokyo-matcha">
+            <span class="theme-dot" style="background: #10b981;"></span>
+            <span>Matcha</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="catppuccin-mocha">
+            <span class="theme-dot" style="background: #cba6f7;"></span>
+            <span>Catppuccin</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="vintage-paper">
+            <span class="theme-dot" style="background: #c25927;"></span>
+            <span>Papel Tibio</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="synthwave-sunset">
+            <span class="theme-dot" style="background: linear-gradient(135deg, #ff2a85, #ffb800);"></span>
+            <span>Synthwave</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="obsidian-dark">
+            <span class="theme-dot" style="background: #ffffff; border: 1px solid #333;"></span>
+            <span>Obsidian OLED</span>
+          </button>
+          <button class="theme-pill-btn" data-theme="nordic-glacier">
+            <span class="theme-dot" style="background: #38bdf8;"></span>
+            <span>Glacier Ártico</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Typography -->
+      <div class="setting-group">
+        <label class="setting-label">Fuente Principal (Lectura)</label>
+        <select id="fontSelect" class="select-custom">
+          <option value="'Outfit', sans-serif">Outfit (Moderna & Dinámica)</option>
+          <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans (Ultra Clean)</option>
+          <option value="'Inter', sans-serif">Inter (Estándar Suizo)</option>
+          <option value="'Syne', sans-serif">Syne (Futurista & Vanguardista)</option>
+          <option value="'Space Grotesk', sans-serif">Space Grotesk (Tech Editorial)</option>
+          <option value="'Playfair Display', serif">Playfair Display (Elegante Clásica)</option>
+          <option value="'Cinzel', serif">Cinzel (Imperial & Exclusiva)</option>
+          <option value="'Lora', serif">Lora (Novela Literaria)</option>
+        </select>
+      </div>
+
+      <!-- Code Typography -->
+      <div class="setting-group">
+        <label class="setting-label">Fuente de Código</label>
+        <select id="codeFontSelect" class="select-custom">
+          <option value="'JetBrains Mono', monospace">JetBrains Mono (Ligaduras Claras)</option>
+          <option value="'Fira Code', monospace">Fira Code (Clásica de Desarrollador)</option>
+          <option value="'Courier New', monospace">Courier Tradicional</option>
+        </select>
+      </div>
+
+      <!-- Font Size Slider -->
+      <div class="setting-group">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="setting-label">Tamaño de Texto</label>
+          <span class="slider-value" id="fontSizeVal">17px</span>
+        </div>
+        <div class="slider-control">
+          <input type="range" id="fontSizeSlider" min="14" max="24" value="17" step="1">
+        </div>
+      </div>
+
+      <!-- Line Height Slider -->
+      <div class="setting-group">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="setting-label">Interlineado</label>
+          <span class="slider-value" id="lineHeightVal">1.75</span>
+        </div>
+        <div class="slider-control">
+          <input type="range" id="lineHeightSlider" min="1.4" max="2.3" value="1.75" step="0.05">
+        </div>
+      </div>
+
+      <!-- Max Width Slider -->
+      <div class="setting-group">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <label class="setting-label">Ancho de Lectura</label>
+          <span class="slider-value" id="widthVal">860px</span>
+        </div>
+        <div class="slider-control">
+          <input type="range" id="widthSlider" min="650" max="1200" value="860" step="10">
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- METRICS PILL BAR -->
+  <div class="metrics-pill">
+    <span>Archivo: <strong id="docTitle">sample.md</strong></span>
+    <span>•</span>
+    <span>Palabras: <strong id="statWords">0</strong></span>
+    <span>•</span>
+    <span>Lectura: <strong id="statTime">1 min</strong></span>
+    <span>•</span>
+    <span>Caracteres: <strong id="statChars">0</strong></span>
+  </div>
+
+  <!-- MAIN READING CANVAS -->
+  <main class="main-wrapper">
+    <article class="markdown-article" id="markdownArticle">
+      <!-- Markdown renders here -->
+    </article>
+  </main>
+
+  <!-- DRAG AND DROP OVERLAY -->
+  <div class="drag-overlay" id="dragOverlay">
+    <div class="drag-icon">📁</div>
+    <h2 style="font-size: 26px; font-weight: 800; color: #fff;">Suelta tu archivo Markdown aquí</h2>
+    <p style="color: var(--accent-primary); font-size: 15px;">Se renderizará inmediatamente con tu estilo melo</p>
+  </div>
+
+  <!-- ZEN MODE ESCAPE HINT -->
+  <div class="zen-exit-hint">Presiona [Esc] para salir del Modo Zen</div>
+
+  <!-- EXTERNAL SCRIPTS -->
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- KaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

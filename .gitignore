@@ -1,0 +1,8 @@
+node_modules/
+app-dist/
+app-dist.zip
+dist-release/
+*.log
+MeloReader_Profile/
+.DS_Store
+Thumbs.db
